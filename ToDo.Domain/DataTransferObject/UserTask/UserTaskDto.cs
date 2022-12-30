@@ -1,13 +1,10 @@
-﻿using System;
-
-namespace ToDo.Domain.Entity
+﻿namespace ToDo.Domain.DataTransferObject.Task
 {
-    public class UserTask
+    public class UserTaskDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public DateTime CompletedDate { get; set; }
         public bool Completed { get; set; }
     }
 }

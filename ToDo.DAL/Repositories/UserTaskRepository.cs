@@ -1,6 +1,8 @@
-﻿using ToDo.DAL.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Data;
+using ToDo.DAL.Data;
 using ToDo.DAL.Interfaces;
-using ToDo.DAL.Migrations;
+using ToDo.Domain.Entity;
 
 namespace ToDo.DAL.Repositories
 {
@@ -13,29 +15,78 @@ namespace ToDo.DAL.Repositories
             _db = db;
         }
 
-        public bool Create(UserTask item)
+        public async Task<int> Create(UserTask item)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _db.UserTask.AddAsync(item);
+                await _db.SaveChangesAsync();
+                return item.Id;
+            }
+            catch
+            {
+                throw new Exception();
+            }
         }
 
-        public bool Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var task = await _db.UserTask.FindAsync(id);
+                if (task != null)
+                {
+                    _db.UserTask.Remove(task);
+                    await _db.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
-        public UserTask Get(int id)
+        public async Task<UserTask> Get(int id)
         {
-            throw new NotImplementedException();
+            return await _db.UserTask.FindAsync(id);
         }
 
-        public IEnumerable<UserTask> GetAll()
+        public async Task<IEnumerable<UserTask>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _db.UserTask.ToListAsync();
         }
 
-        public bool Update(UserTask item)
+        public async Task<bool> Update(UserTask item)
         {
-            throw new NotImplementedException();
+            var result = _db.Entry<UserTask>(item);
+            result.State = EntityState.Modified;
+            try
+            {
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<bool> DeleteCompleted()
+        {
+            var delete = await _db.UserTask.Where(x => x.Completed 
+                        && x.CompletedDate != DateTime.MinValue 
+                        && x.CompletedDate <= DateTime.Now.AddDays(-30)).ToListAsync();
+            try
+            {
+                _db.UserTask.RemoveRange(delete);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
